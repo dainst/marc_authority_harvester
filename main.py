@@ -53,51 +53,50 @@ def create_default_output_directory():
 
 parser = argparse.ArgumentParser(description='Harvest MARC authority data from various data providers.')
 parser.add_argument('-f', '--format', type=str, nargs='?', default='marc', choices=['marc', 'marcxml'],
-                    help='The desired output format.')
+                    help="The desired output format.")
 parser.add_argument('-s', '--sources', type=str, nargs='?', default='all', choices=['all', 'gazetteer', 'loc'],
-                    help='The desired data providers.')
+                    help="The desired data providers.")
 parser.add_argument('-t', '--target', type=is_writable_directory, nargs='?', default=create_default_output_directory(),
-                    help='Specificy output directory.')
+                    help="Specificy output directory.")
 
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-c', '--continue', action='store_true',
-                   help='Continue from last time the script was run.')
+                   help="Continue from last time the script was run.")
 group.add_argument('-d', '--date', type=validate_date, nargs='?',
-                   help='Harvest everything from a given date onwards, pattern: YYYY-MM-DD.')
+                   help="Harvest everything since a given date, date ISO pattern: YYYY-MM-DD.")
 group.add_argument('-o', '--offset', type=is_positive_number, nargs='?',
-                   help='Use an offset of days to specify the starting date.')
+                   help=f"Use a day offset from the current date to specify the starting date.")
 
 
 if __name__ == '__main__':
-    parsed = vars(parser.parse_args())
+    options = parser.parse_args()
 
-    date_log_path = f"{parsed['target']}/last_run_date.log"
-    print(parsed)
+    date_log_path = f"{options['target']}/last_run_date.log"
 
-    if parsed['continue']:
+    if options['continue']:
         with open(date_log_path, 'r') as log:
             start_date = datetime.date.fromisoformat(log.readline())
-    elif parsed['date']:
-        start_date = parsed['date']
+    elif options['date']:
+        start_date = options['date']
     else:
-        start_date = datetime.date.today() - datetime.timedelta(days=parsed['offset'])
+        start_date = datetime.date.today() - datetime.timedelta(days=options['offset'])
 
     logger.info(f"Harvesting all data changes since {start_date.isoformat()}.")
 
-    if parsed['sources'] == "gazetteer":
+    if options['sources'] == "gazetteer":
         gazetteer = GazetteerHarvester(
             start_date=start_date,
-            output_directory=parsed['target'],
-            output_format=parsed['format']
+            output_directory=options['target'],
+            output_format=options['format']
         )
         gazetteer.start()
-    elif parsed['sources'] == "loc":
+    elif options['sources'] == "loc":
         print("Todo: Harvest LoC")
     else:
         gazetteer = GazetteerHarvester(
             start_date=start_date,
-            output_directory=parsed['target'],
-            output_format=parsed['format']
+            output_directory=options['target'],
+            output_format=options['format']
         )
         gazetteer.start()
         print("Todo: Harvest LoC")

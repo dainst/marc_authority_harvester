@@ -8,7 +8,6 @@ import re
 import math
 
 
-
 class GazetteerHarvester:
     _base_url: str = 'https://gazetteer.dainst.org'
     _output_file = None
