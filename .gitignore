@@ -1,0 +1,10 @@
+# Python 3
+
+venv/
+*.pyc
+
+# Output directory
+
+output/**/*.mrc
+output/**/*.marcxml
+output/**/*.log
