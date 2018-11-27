@@ -43,8 +43,8 @@ def is_writable_directory(path: str):
         return path
 
 
-def create_default_output_directory():
-    path = f'./output/{datetime.date.today().isoformat()}/'
+def create_default_output_directory(output_path):
+    path = f'{output_path}/{datetime.date.today().isoformat()}/'
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -56,7 +56,7 @@ parser.add_argument('-f', '--format', type=str, nargs='?', default='marc', choic
                     help="The desired output format.")
 parser.add_argument('-s', '--sources', type=str, nargs='?', default='all', choices=['all', 'gazetteer', 'loc'],
                     help="The desired data providers.")
-parser.add_argument('-t', '--target', type=is_writable_directory, nargs='?', default=create_default_output_directory(),
+parser.add_argument('-t', '--target', type=is_writable_directory, nargs='?', default='./output',
                     help="Specificy output directory.")
 
 group = parser.add_mutually_exclusive_group(required=True)
@@ -70,7 +70,7 @@ group.add_argument('-o', '--offset', type=is_positive_number, nargs='?',
 
 if __name__ == '__main__':
     options = vars(parser.parse_args())
-
+    final_output_path = create_default_output_directory(options['target'])
     date_log_path = f"{options['target']}/last_run_date.log"
 
     if options['continue']:
@@ -86,27 +86,27 @@ if __name__ == '__main__':
     if options['sources'] == "gazetteer":
         gazetteer = GazetteerHarvester(
             start_date=start_date,
-            output_directory=options['target'],
+            output_directory=final_output_path,
             output_format=options['format']
         )
         gazetteer.start()
     elif options['sources'] == "loc":
         loc = LocHarvester(
             start_date=start_date,
-            output_directory=options['target'],
+            output_directory=final_output_path,
             output_format=options['format']
         )
         loc.start()
     else:
         gazetteer = GazetteerHarvester(
             start_date=start_date,
-            output_directory=options['target'],
+            output_directory=final_output_path,
             output_format=options['format']
         )
         gazetteer.start()
         loc = LocHarvester(
             start_date=start_date,
-            output_directory=options['target'],
+            output_directory=final_output_path,
             output_format=options['format']
         )
         loc.start()
