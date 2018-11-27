@@ -128,7 +128,7 @@ class GazetteerHarvester:
         elif self._format == 'marcxml':
             self._output_file.write(record_to_xml(record))
 
-    def _fetch_places_data(self, batch):
+    def _collect_places_data(self, batch):
         self.logger.info(f'Retrieving place data for batch #{self._processed_batches_counter + 1}...')
         url_list = []
         for item in batch:
@@ -178,7 +178,7 @@ class GazetteerHarvester:
         self._processed_batches_counter += 1
         return places
 
-    def _fetch_batch(self, offset):
+    def _get_batch(self, offset):
         url = f'{self._base_url}/search.json?limit={self._batch_size}&offset={offset}&q={self.q}'
         self.logger.debug(url)
         try:
@@ -192,12 +192,12 @@ class GazetteerHarvester:
         with open(self._output_path, 'wb') as output_file:
             self._output_file = output_file
 
-            batch = self._fetch_batch(0)
+            batch = self._get_batch(0)
             total = batch['total']
 
             self.logger.info(f"{total} places in query total.")
             self.logger.info(f"Harvesting {math.ceil(total / self._batch_size)} batches.")
-            places = self._fetch_places_data(batch['result'])
+            places = self._collect_places_data(batch['result'])
 
             for place in places:
                 self._write_place(place)
@@ -205,8 +205,8 @@ class GazetteerHarvester:
             if total > self._batch_size:
                 offset = self._batch_size
                 while offset < total:
-                    batch = self._fetch_batch(offset)
-                    places = self._fetch_places_data(batch['result'])
+                    batch = self._get_batch(offset)
+                    places = self._collect_places_data(batch['result'])
 
                     for place in places:
                         self._write_place(place)
