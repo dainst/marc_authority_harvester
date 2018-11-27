@@ -102,7 +102,8 @@ class GazetteerHarvester:
                 else:
                     parent_uri = None
 
-        record = Record(force_utf8=True, to_unicode=True)
+        record = Record(force_utf8=True, file_encoding='UTF-8')
+        record.leader = record.leader[0:6] + 'z' + record.leader[7:]
         record.add_field(field_024)
         record.add_field(field_040)
 
@@ -196,7 +197,7 @@ class GazetteerHarvester:
             total = batch['total']
 
             self.logger.info(f"{total} places in query total.")
-            self.logger.info(f"Harvesting {math.ceil(total / self._batch_size)} batches.")
+            self.logger.info(f"Number of batches: {math.ceil(total / self._batch_size)}")
             places = self._collect_places_data(batch['result'])
 
             for place in places:
