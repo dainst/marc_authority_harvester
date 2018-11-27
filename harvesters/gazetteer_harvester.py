@@ -106,14 +106,14 @@ class GazetteerHarvester:
         record.add_field(field_024)
         record.add_field(field_040)
 
-        if field_151 is not None:
+        if field_151:
             record.add_field(field_151)
 
-        if fields_451 is not []:
+        if fields_451:
             for field in fields_451:
                 record.add_field(field)
 
-        if fields_551 is not []:
+        if fields_551:
             for field in fields_551:
                 record.add_field(field)
 
