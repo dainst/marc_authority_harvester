@@ -217,7 +217,6 @@ class GazetteerHarvester:
 
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
-        self.logger.info('Initializing, loading data and creating mapping...')
 
         self.q = f'lastChangeDate:[{start_date.isoformat()}%20TO%20{datetime.date.today().isoformat()}]'
 
