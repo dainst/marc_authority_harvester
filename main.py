@@ -7,7 +7,7 @@ import gevent.monkey as monkey
 monkey.patch_all(thread=False, select=False)
 
 from harvesters.gazetteer_harvester import GazetteerHarvester
-
+from harvesters.loc_harvester import LocHarvester
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -69,7 +69,7 @@ group.add_argument('-o', '--offset', type=is_positive_number, nargs='?',
 
 
 if __name__ == '__main__':
-    options = parser.parse_args()
+    options = vars(parser.parse_args())
 
     date_log_path = f"{options['target']}/last_run_date.log"
 
@@ -91,7 +91,12 @@ if __name__ == '__main__':
         )
         gazetteer.start()
     elif options['sources'] == "loc":
-        print("Todo: Harvest LoC")
+        loc = LocHarvester(
+            start_date=start_date,
+            output_directory=options['target'],
+            output_format=options['format']
+        )
+        loc.start()
     else:
         gazetteer = GazetteerHarvester(
             start_date=start_date,
@@ -99,7 +104,12 @@ if __name__ == '__main__':
             output_format=options['format']
         )
         gazetteer.start()
-        print("Todo: Harvest LoC")
+        loc = LocHarvester(
+            start_date=start_date,
+            output_directory=options['target'],
+            output_format=options['format']
+        )
+        loc.start()
 
     with open(date_log_path, 'w') as log:
         log.write(datetime.date.today().isoformat())
