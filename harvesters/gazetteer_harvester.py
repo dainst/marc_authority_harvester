@@ -102,7 +102,7 @@ class GazetteerHarvester:
                 else:
                     parent_uri = None
 
-        record = Record(force_utf8=True, file_encoding='UTF-8')
+        record = Record(force_utf8=True)
         record.leader = record.leader[0:6] + 'z' + record.leader[7:]
         record.add_field(field_024)
         record.add_field(field_040)
