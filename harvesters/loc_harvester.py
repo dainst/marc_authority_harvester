@@ -50,9 +50,14 @@ class LocHarvester:
 
         records = []
 
+        def exception_handler(request, exception):
+            self.logger.error(exception)
+            self.logger.error(request)
+            pass
+
         try:
             rs = [grequests.get(url) for (url, _date) in link_list]
-            responses = grequests.map(rs, exception_handler=self._handle_query_exception)
+            responses = grequests.map(rs, exception_handler=exception_handler)
             for response in responses:
                 response.raise_for_status()
                 record = marcxml.parse_xml_to_array(StringIO(BytesIO(response.content).read().decode('UTF-8')))[0]

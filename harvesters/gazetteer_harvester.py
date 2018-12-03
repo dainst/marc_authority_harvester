@@ -138,9 +138,15 @@ class GazetteerHarvester:
             url_list.append(f'{self._base_url}/doc/{item["gazId"]}.json')
 
         places = []
+
+        def exception_handler(request, exception):
+            self.logger.error(exception)
+            self.logger.error(request)
+            pass
+
         try:
             rs = [grequests.get(url) for url in url_list]
-            responses = grequests.map(rs, exception_handler=self._handle_query_exception)
+            responses = grequests.map(rs, exception_handler=exception_handler)
             for response in responses:
                 response.raise_for_status()
                 place = response.json()
