@@ -75,7 +75,7 @@ if __name__ == '__main__':
 
     if options['continue']:
         with open(date_log_path, 'r') as log:
-            start_date = datetime.date.fromisoformat(log.readline())
+            start_date = datetime.date.fromisoformat(log.readline().rstrip('\n'))
     elif options['date']:
         start_date = options['date']
     else:
