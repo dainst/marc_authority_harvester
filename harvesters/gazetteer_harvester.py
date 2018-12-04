@@ -153,6 +153,9 @@ class GazetteerHarvester:
             rs = [grequests.get(url) for url in url_list]
             responses = grequests.map(rs, exception_handler=exception_handler)
             for response in responses:
+                if response is None:
+                    continue
+
                 response.raise_for_status()
                 place = response.json()
 
