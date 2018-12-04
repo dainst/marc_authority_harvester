@@ -39,7 +39,7 @@ class GazetteerHarvester:
                 return ['a', data['title'], 'l', data['language']]
 
         field_024 = Field(
-            tag=24, indicators=(' ', 7), subfields=[
+            tag=24, indicators=(7, ' '), subfields=[
                 'a', place['gazId'],
                 '2', "iDAI.gazetteer"
             ]
