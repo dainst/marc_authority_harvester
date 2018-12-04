@@ -51,11 +51,14 @@ class GazetteerHarvester:
             ]
         )
 
-        field_151 = None
         if 'prefName' in place:
             field_151 = Field(
                 tag=151, indicators=(' ', ' '), subfields=create_x51_heading_subfield(place['prefName'])
             )
+        else:
+            self.logger.warning("No 'prefName' for place:")
+            self.logger.warning(place)
+            return None
 
         fields_451 = []
         if 'names' in place:
@@ -107,8 +110,7 @@ class GazetteerHarvester:
         record.add_field(field_024)
         record.add_field(field_040)
 
-        if field_151:
-            record.add_field(field_151)
+        record.add_field(field_151)
 
         if fields_451:
             for field in fields_451:
@@ -124,7 +126,10 @@ class GazetteerHarvester:
 
         record = self._create_marc_record(place)
 
-        if self._format == 'marc':
+        if record is None:
+            self.logger.warning("Skipping place:")
+            self.logger.warning(place)
+        elif self._format == 'marc':
             self._output_file.write(record.as_marc())
         elif self._format == 'marcxml':
             self._output_file.write(record_to_xml(record))
