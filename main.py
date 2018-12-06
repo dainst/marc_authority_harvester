@@ -60,6 +60,8 @@ parser.add_argument('-t', '--target', type=is_writable_directory, nargs='?', def
                     help="Specificy output directory.")
 
 group = parser.add_mutually_exclusive_group(required=True)
+group.add_argument('-n', '--no-limit', action='store_true',
+                   help="Get all data available without a date limit.")
 group.add_argument('-c', '--continue', action='store_true',
                    help="Continue from last time the script was run.")
 group.add_argument('-d', '--date', type=validate_date, nargs='?',
@@ -78,10 +80,15 @@ if __name__ == '__main__':
             start_date = datetime.date.fromisoformat(log.readline().rstrip('\n'))
     elif options['date']:
         start_date = options['date']
-    else:
+    elif options['offset']:
         start_date = datetime.date.today() - datetime.timedelta(days=options['offset'])
+    else:
+        start_date = None
 
-    logger.info(f"Harvesting all data changes since {start_date.isoformat()}.")
+    if start_date is not None:
+        logger.info(f"Harvesting all data changes since {start_date.isoformat()}.")
+    else:
+        logger.info("Running complete harvest.")
 
     if options['sources'] == "gazetteer":
         gazetteer = GazetteerHarvester(
@@ -104,6 +111,7 @@ if __name__ == '__main__':
             output_format=options['format']
         )
         gazetteer.start()
+
         loc = LocHarvester(
             start_date=start_date,
             output_directory=final_output_path,

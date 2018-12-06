@@ -194,7 +194,7 @@ class GazetteerHarvester:
         return places
 
     def _get_batch(self, offset):
-        url = f'{self._base_url}/search.json?limit={self._batch_size}&offset={offset}&q={self.q}'
+        url = f'{self._base_url}/search.json?limit={self._batch_size}&offset={offset}&q={self.timeframe_query}'
         self.logger.debug(url)
         try:
             response = requests.get(url=url)
@@ -233,7 +233,11 @@ class GazetteerHarvester:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
 
-        self.q = f'lastChangeDate:[{start_date.isoformat()}%20TO%20{datetime.date.today().isoformat()}]'
+        if start_date is None:
+            self.timeframe_query = ''
+        else:
+            self.timeframe_query = \
+                f"lastChangeDate:[{start_date.isoformat()}%20TO%20{datetime.date.today().isoformat()}]"
 
         if output_format == 'marc':
             suffix = '.mrc'

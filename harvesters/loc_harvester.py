@@ -165,6 +165,9 @@ class LocHarvester:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.logger.setLevel(logging.INFO)
 
+        if start_date is None:
+            self.logger.warning("Harvesting without start date is not supported, aborting.")
+
         self._start_date = start_date
         self._output_directory = output_directory
 
