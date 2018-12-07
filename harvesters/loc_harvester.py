@@ -132,6 +132,10 @@ class LocHarvester:
 
     def start(self):
 
+        if self._start_date is None:
+            self.logger.warning("Harvesting without start date is not supported, aborting.")
+            return
+
         with open(f"{self._output_directory}loc_personal_names{self._suffix}", 'wb') as personal_names_fh, \
              open(f"{self._output_directory}loc_corporate_names{self._suffix}", 'wb') as corporate_names_fh, \
              open(f"{self._output_directory}loc_meeting_names{self._suffix}", 'wb') as meeting_names_fh, \
@@ -166,7 +170,7 @@ class LocHarvester:
         self.logger.setLevel(logging.INFO)
 
         if start_date is None:
-            self.logger.warning("Harvesting without start date is not supported, aborting.")
+            self.logger.warning("Harvesting without start date is not supported.")
 
         self._start_date = start_date
         self._output_directory = output_directory
