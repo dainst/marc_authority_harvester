@@ -18,3 +18,4 @@ Run `python3 main.py -h` for instructions.
   2. Specify a day(s) offset from your current date.
   3. Continue from the last day the script was executed (after each run, this date is stored in a log file in the output
 directory).
+* Alternatively, you can run the script without specifying a start date, creating a complete data dump.
