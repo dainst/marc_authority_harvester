@@ -64,7 +64,7 @@ class GazetteerHarvester:
 
         field_040 = Field(
             tag=40, indicators=(' ', ' '), subfields=[
-                'a', "iDAI.gazetteer"
+                'a', f"iDAI.gazetteer-{place['gazId']}"
             ]
         )
 
@@ -108,7 +108,7 @@ class GazetteerHarvester:
                 if 'prefName' in current and 'accessDenied':
                     fields_551.append(Field(
                         tag=551, indicators=(' ', ' '), subfields=create_x51_heading_subfield(current['prefName']) + [
-                            'x', "part of", 'i', f"ancestor of order {order}"
+                            'x', "part of", 'i', f"{order}"  # TODO: ID ebenfalls hinterlegen?
                         ]
                     ))
                 elif 'accessDenied' in current and current['accessDenied'] is True:
