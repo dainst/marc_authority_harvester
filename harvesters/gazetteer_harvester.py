@@ -21,15 +21,32 @@ class GazetteerHarvester:
         match = self._gazId_pattern.match(url)
         return match.group(1)
 
-    def _handle_query_exception(self, e):
+    def _retry_query(self, url, retries_left):
+        self.logger.info(f"  Retrying {url}...")
+        try:
+            if retries_left == 0:
+                self.logger.info(f"  No retries left for #{url}.")
+                return None
+            else:
+                response = requests.get(url=url)
+                response.raise_for_status()
+                self.logger.info("  Retry successful.")
+                return response.json()
+        except Exception as e:
+            self._handle_query_exception(e, retries_left - 1)
+
+    def _handle_query_exception(self, e, retries_left):
         self.logger.error(e)
         if type(e) is ValueError:
             self.logger.error('JSON decoding fails!')
-            self.logger.error(e)
         elif type(e) is requests.exceptions.RequestException:
             self.logger.error(f'Gazetteer service request fails!')
             self.logger.error(f'Request: {e.request}')
             self.logger.error(f'Response: {e.response}')
+        elif type(e) is requests.exceptions.HTTPError and e.response.status_code == 500:
+            return self._retry_query(e.request.url, retries_left)
+        elif type(e) is requests.exceptions.ConnectionError:
+            return self._retry_query(e.request.url, retries_left)
 
     def _create_marc_record(self, place):
         def create_x51_heading_subfield(data):
@@ -84,7 +101,7 @@ class GazetteerHarvester:
                     response = requests.get(url)
                     parent = response.json()
 
-                    self._cached_places[parent['@id']] = parent
+                    self._cached_places[parent_uri] = parent
 
                 current = self._cached_places[parent_uri]
 
@@ -144,14 +161,9 @@ class GazetteerHarvester:
 
         places = []
 
-        def exception_handler(request, exception):
-            self.logger.error(exception)
-            self.logger.error(request)
-            pass
-
         try:
             rs = [grequests.get(url) for url in url_list]
-            responses = grequests.map(rs, exception_handler=exception_handler)
+            responses = grequests.map(rs)
             for response in responses:
                 if response is None:
                     continue
@@ -163,7 +175,7 @@ class GazetteerHarvester:
 
                 places.append(place)
         except Exception as e:
-            self._handle_query_exception(e)
+            self._handle_query_exception(e, 5)
 
         # Also load parent and ancestor places of the current batch (in case they are not already cached)
         url_list = []
@@ -179,7 +191,7 @@ class GazetteerHarvester:
 
         try:
             rs = [grequests.get(url) for url in url_list]
-            responses = grequests.map(rs, exception_handler=self._handle_query_exception)
+            responses = grequests.map(rs)
             for response in responses:
                 response.raise_for_status()
                 place = response.json()
@@ -188,7 +200,7 @@ class GazetteerHarvester:
 
                 self._cached_places[place['@id']] = place
         except Exception as e:
-            self._handle_query_exception(e)
+            self._handle_query_exception(e, 5)
 
         self._processed_batches_counter += 1
         return places
@@ -201,7 +213,7 @@ class GazetteerHarvester:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            self._handle_query_exception(e)
+            self._handle_query_exception(e, 5)
 
     def start(self):
         with open(self._output_path, 'wb') as output_file:
