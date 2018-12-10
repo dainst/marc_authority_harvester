@@ -58,13 +58,14 @@ class GazetteerHarvester:
         field_024 = Field(
             tag=24, indicators=(7, ' '), subfields=[
                 'a', place['gazId'],
-                '2', "iDAI.gazetteer"
+                '2', "iDAI.gazetteer",
+                '9', f"iDAI.gazetteer-{place['gazId']}"
             ]
         )
 
         field_040 = Field(
             tag=40, indicators=(' ', ' '), subfields=[
-                'a', f"iDAI.gazetteer-{place['gazId']}"
+                'a', 'Deutsches Archäologisches Institut'
             ]
         )
 
