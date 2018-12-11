@@ -55,6 +55,8 @@ class GazetteerHarvester:
             else:
                 return ['a', data['title'], 'l', data['language']]
 
+        field_001 = Field(tag='001', data=f"iDAI.gazetteer-{place['gazId']}")
+
         field_024 = Field(
             tag=24, indicators=(7, ' '), subfields=[
                 'a', place['gazId'],
@@ -125,6 +127,7 @@ class GazetteerHarvester:
 
         record = Record(force_utf8=True)
         record.leader = record.leader[0:6] + 'z' + record.leader[7:]
+        record.add_field(field_001)
         record.add_field(field_024)
         record.add_field(field_040)
 
