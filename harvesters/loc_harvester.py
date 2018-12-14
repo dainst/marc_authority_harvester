@@ -172,7 +172,16 @@ class LocHarvester:
         if start_date is None:
             self.logger.warning("Harvesting without start date is not supported.")
 
-        self._start_date = start_date
+        # LoC applies changes at 5:00 EST, which would be 11:00 local time in Berlin.
+        # We won't be running the script in the daytime, so we force the script to look for timestamps actually one day
+        # earlier than actually requested. TODO: Maybe find generalized solution (without expecting UTC+1 timezone)
+        if datetime.datetime.now().time().hour < 12:
+            new_date = start_date - datetime.timedelta(days=1)
+            self.logger.warning(f"Script running before LoC applies changes to their update feed, "
+                                f"also harvesting changes from {new_date.isoformat()}.")
+            self._start_date = new_date
+        else:
+            self._start_date = start_date
         self._output_directory = output_directory
 
         if output_format == 'marc':
