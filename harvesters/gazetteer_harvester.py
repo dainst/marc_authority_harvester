@@ -58,19 +58,19 @@ class GazetteerHarvester:
         field_001 = Field(tag='001', data=f"iDAI.gazetteer-{place['gazId']}")
         field_003 = Field(tag='003', data="DE-2553")
 
-        fixed_length_data_elements = datetime.date.today().isoformat().replace('-', '')  # index 5
-        fixed_length_data_elements += '|'  # 6
+        fixed_length_data_elements = datetime.date.today().isoformat().replace('-', '')
+        fixed_length_data_elements += '|'           # index 6
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
         fixed_length_data_elements += 'z'
-        fixed_length_data_elements += 'z'  # 11
+        fixed_length_data_elements += 'z'           # 11
         fixed_length_data_elements += 'z'
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
-        fixed_length_data_elements += 'd'  # 17
+        fixed_length_data_elements += 'd'           # 17
         fixed_length_data_elements += '          '  # 27
         fixed_length_data_elements += '|'
         fixed_length_data_elements += '|'
@@ -78,7 +78,7 @@ class GazetteerHarvester:
         fixed_length_data_elements += 'b'
         fixed_length_data_elements += 'n'
         fixed_length_data_elements += '|'
-        fixed_length_data_elements += '    '  # 37
+        fixed_length_data_elements += '    '        # 37
         fixed_length_data_elements += ' '
         fixed_length_data_elements += ' '
         field_008 = Field(tag='008', data=fixed_length_data_elements)
@@ -137,7 +137,7 @@ class GazetteerHarvester:
                 if 'prefName' in current and 'accessDenied':
                     fields_551.append(Field(
                         tag=551, indicators=(' ', ' '), subfields=create_x51_heading_subfield(current['prefName']) + [
-                            'x', "part of", 'i', f"{order}"  # TODO: ID ebenfalls hinterlegen?
+                            'x', "part of", 'i', f"{order}", '0', f"iDAI.gazetteer-{current['gazId']}"
                         ]
                     ))
                 elif 'accessDenied' in current and current['accessDenied'] is True:
