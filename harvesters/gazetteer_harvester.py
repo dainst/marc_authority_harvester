@@ -99,7 +99,9 @@ class GazetteerHarvester:
 
         if 'prefName' in place:
             field_151 = Field(
-                tag=151, indicators=(' ', ' '), subfields=create_x51_heading_subfield(place['prefName'])
+                tag=151, indicators=(' ', ' '), subfields=create_x51_heading_subfield(place['prefName']) + [
+                    '1', f"{self._base_url}/doc/{place['gazId']}"
+                ]
             )
         else:
             self.logger.warning("No 'prefName' for place:")
