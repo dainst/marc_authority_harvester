@@ -50,14 +50,9 @@ class LocHarvester:
 
         records = []
 
-        def exception_handler(request, exception):
-            self.logger.error(exception)
-            self.logger.error(request)
-            pass
-
         try:
             rs = [grequests.get(url) for (url, _date) in link_list]
-            responses = grequests.map(rs, exception_handler=exception_handler)
+            responses = grequests.map(rs)
             for response in responses:
                 if response is None:
                     continue
@@ -67,20 +62,33 @@ class LocHarvester:
                 records.append(record)
             return records
         except Exception as e:
-            self._handle_query_exception(e)
+            self._handle_query_exception(e, 5)
 
-    def _handle_query_exception(self, e):
-        self.logger.error(e)
-        if type(e) is ValueError:
-            self.logger.error('JSON decoding fails!')
-            self.logger.error(e)
-        elif type(e) is requests.exceptions.RequestException:
-            self.logger.error(f'Gazetteer service request fails!')
+    def _retry_query(self, url, retries_left):
+        self.logger.info(f"  Retrying {url}...")
+        try:
+            if retries_left == 0:
+                self.logger.info(f"  No retries left for #{url}.")
+                return None
+            else:
+                response = requests.get(url=url)
+                response.raise_for_status()
+                self.logger.info("  Retry successful.")
+                return response.json()
+        except Exception as e:
+            self._handle_query_exception(e, retries_left - 1)
+
+    def _handle_query_exception(self, e, retries_left):
+
+        if retries_left > 5:
+            return self._retry_query(e.request.url, retries_left)
+        else:
+            self.logger.error('Maximum number of retries reached, aborting.')
+            self.logger.error(f'Unhandled error: ')
             self.logger.error(f'Request: {e.request}')
             self.logger.error(f'Response: {e.response}')
 
     def _read_feed(self, url, min_date):
-        self.logger.debug(url)
         res = requests.get(url, headers={"Accept": "application/xml"}, cookies={"Cookie": "?"})
 
         xml_element_tree: etree.ElementTree = etree.parse(BytesIO(res.content))
