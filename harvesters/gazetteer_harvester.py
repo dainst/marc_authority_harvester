@@ -239,9 +239,12 @@ class GazetteerHarvester:
         self._processed_batches_counter += 1
         return places
 
-    def _get_batch(self, offset):
-        url = f'{self._base_url}/search.json?limit={self._batch_size}&offset={offset}&q={self.timeframe_query}'
-        self.logger.debug(url)
+    def _get_batch(self, scroll_id=None):
+        if scroll_id is None:
+            url = f"{self._base_url}/search.json?limit={self._batch_size}&scroll=true&q={self.timeframe_query}"
+        else:
+            url = f"{self._base_url}/search.json?limit={self._batch_size}&scrollId={scroll_id}&q={self.timeframe_query}"
+
         try:
             response = requests.get(url=url)
             response.raise_for_status()
@@ -253,8 +256,9 @@ class GazetteerHarvester:
         with open(self._output_path, 'wb') as output_file:
             self._output_file = output_file
 
-            batch = self._get_batch(0)
+            batch = self._get_batch()
             total = batch['total']
+            scroll_id = batch['scrollId']
 
             self.logger.info(f"{total} places in query total.")
             self.logger.info(f"Number of batches: {math.ceil(total / self._batch_size)}")
@@ -263,16 +267,14 @@ class GazetteerHarvester:
             for place in places:
                 self._write_place(place)
 
-            if total > self._batch_size:
-                offset = self._batch_size
-                while offset < total:
-                    batch = self._get_batch(offset)
-                    places = self._collect_places_data(batch['result'])
+            next_batch = self._get_batch(scroll_id)
+            while next_batch['result']:
+                places = self._collect_places_data(next_batch['result'])
 
-                    for place in places:
-                        self._write_place(place)
+                for place in places:
+                    self._write_place(place)
 
-                    offset += self._batch_size
+                next_batch = self._get_batch(scroll_id)
 
     def __init__(self, start_date, output_directory, output_format):
 
