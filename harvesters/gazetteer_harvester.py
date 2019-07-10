@@ -22,10 +22,10 @@ class GazetteerHarvester:
         return match.group(1)
 
     def _retry_query(self, url, retries_left):
-        self.logger.info(f"  Retrying {url}...")
+        self.logger.info("  Retrying {0}...".format(url))
         try:
             if retries_left == 0:
-                self.logger.info(f"  No retries left for #{url}.")
+                self.logger.info("  No retries left for {0}.".format(url))
                 return None
             else:
                 response = requests.get(url=url)
@@ -38,11 +38,11 @@ class GazetteerHarvester:
     def _handle_query_exception(self, e, retries_left):
         self.logger.error(e)
         if type(e) is ValueError:
-            self.logger.error('JSON decoding fails!')
+            self.logger.error("JSON decoding fails!")
         elif type(e) is requests.exceptions.RequestException:
-            self.logger.error(f'Gazetteer service request fails!')
-            self.logger.error(f'Request: {e.request}')
-            self.logger.error(f'Response: {e.response}')
+            self.logger.error("Gazetteer service request fails!")
+            self.logger.error("Request: {0}".format(e.request))
+            self.logger.error("Response: {0}".format(e.response))
         elif type(e) is requests.exceptions.HTTPError and e.response.status_code == 500:
             return self._retry_query(e.request.url, retries_left)
         elif type(e) is requests.exceptions.ConnectionError:
@@ -55,7 +55,7 @@ class GazetteerHarvester:
             else:
                 return ['a', data['title'], 'l', data['language']]
 
-        field_001 = Field(tag='001', data=f"iDAI.gazetteer-{place['gazId']}")
+        field_001 = Field(tag='001', data="iDAI.gazetteer-{0}".format(place['gazId']))
         field_003 = Field(tag='003', data="DE-2553")
 
         fixed_length_data_elements = datetime.date.today().isoformat().replace('-', '')
@@ -87,7 +87,7 @@ class GazetteerHarvester:
             tag=24, indicators=(7, ' '), subfields=[
                 'a', place['gazId'],
                 '2', "iDAI.gazetteer",
-                '9', f"iDAI.gazetteer-{place['gazId']}"
+                '9', "iDAI.gazetteer-{0}".format(place['gazId'])
             ]
         )
 
@@ -100,7 +100,7 @@ class GazetteerHarvester:
         if 'prefName' in place:
             field_151 = Field(
                 tag=151, indicators=(' ', ' '), subfields=create_x51_heading_subfield(place['prefName']) + [
-                    '1', f"{self._base_url}/doc/{place['gazId']}"
+                    '1', "{0}/doc/{1}".format(self._base_url, place['gazId'])
                 ]
             )
         else:
@@ -122,12 +122,13 @@ class GazetteerHarvester:
             while parent_uri is not None:
 
                 if parent_uri not in self._cached_places:
-                    self.logger.debug(f"Parent:{self._base_url}/doc/{self._extract_gaz_id_from_url(parent_uri)}.json "
-                                      f"not in cached places!")
-                    self.logger.debug(f"Child: {self._base_url}/doc/{self._extract_gaz_id_from_url(place['@id'])}.json")
-                    self.logger.debug(f"...running additional query.")
+                    self.logger.debug("Parent:{0}/doc/{1}.json not in cached places!"
+                                      .format(self._base_url, self._extract_gaz_id_from_url(parent_uri)))
+                    self.logger.debug("Child: {0}/doc/{1}.json"
+                                      .format(self._base_url, self._extract_gaz_id_from_url(place['@id'])))
+                    self.logger.debug("...running additional query.")
 
-                    url = f'{self._base_url}/doc/{self._extract_gaz_id_from_url(parent_uri)}.json'
+                    url = "{0}/doc/{1}.json".format(self._base_url, self._extract_gaz_id_from_url(parent_uri))
 
                     response = requests.get(url)
                     parent = response.json()
@@ -139,13 +140,13 @@ class GazetteerHarvester:
                 if 'prefName' in current and 'accessDenied':
                     fields_551.append(Field(
                         tag=551, indicators=(' ', ' '), subfields=create_x51_heading_subfield(current['prefName']) + [
-                            'x', "part of", 'i', f"{order}", '0', f"iDAI.gazetteer-{current['gazId']}"
+                            'x', "part of", 'i', "{0}".format(order), '0', "iDAI.gazetteer-{0}".format(current['gazId'])
                         ]
                     ))
                 elif 'accessDenied' in current and current['accessDenied'] is True:
                     break
                 else:
-                    self.logger.warning(f"No prefName for: {self._base_url}/doc/{current['gazId']}.json")
+                    self.logger.warning("No prefName for: {0}/doc/{1}.json".format(self._base_url, current['gazId']))
 
                 order += 1
                 if 'parent' in current:
@@ -186,12 +187,12 @@ class GazetteerHarvester:
             self._output_file.write(record_to_xml(record))
 
     def _collect_places_data(self, batch):
-        self.logger.info(f'Retrieving place data for batch #{self._processed_batches_counter + 1}...')
+        self.logger.info("Retrieving place data for batch #{0}...".format(self._processed_batches_counter + 1))
         url_list = []
         for item in batch:
             if item['@id'] in self._cached_places:
                 continue
-            url_list.append(f'{self._base_url}/doc/{item["gazId"]}.json')
+            url_list.append("{0}/doc/{1}.json".format(self._base_url, item["gazId"]))
 
         places = []
 
@@ -215,11 +216,15 @@ class GazetteerHarvester:
         url_list = []
         for place in places:
             if 'parent' in place and place['parent'] not in self._cached_places:
-                url_list.append(f'{self._base_url}/doc/{self._extract_gaz_id_from_url(place["parent"])}.json')
+                url_list.append(
+                    "{0}/doc/{1}.json".format(self._base_url, self._extract_gaz_id_from_url(place["parent"]))
+                )
             if 'ancestors' in place:
                 for ancestor in place['ancestors']:
                     if ancestor not in self._cached_places:
-                        url_list.append(f'{self._base_url}/doc/{self._extract_gaz_id_from_url(ancestor)}.json')
+                        url_list.append(
+                            "{0}/doc/{1}.json".format(self._base_url, self._extract_gaz_id_from_url(ancestor))
+                        )
 
         url_list = list(set(url_list))
 
@@ -241,9 +246,11 @@ class GazetteerHarvester:
 
     def _get_batch(self, scroll_id=None):
         if scroll_id is None:
-            url = f"{self._base_url}/search.json?limit={self._batch_size}&scroll=true&q={self.timeframe_query}"
+            url = "{0}/search.json?limit={1}&scroll=true&q={2}"\
+                .format(self._base_url, self._batch_size, self.timeframe_query)
         else:
-            url = f"{self._base_url}/search.json?limit={self._batch_size}&scrollId={scroll_id}&q={self.timeframe_query}"
+            url = "{0}/search.json?limit={1}&scrollId={2}&q={3}"\
+                .format(self._base_url, self._batch_size, scroll_id, self.timeframe_query)
 
         try:
             response = requests.get(url=url)
@@ -260,8 +267,8 @@ class GazetteerHarvester:
             total = batch['total']
             scroll_id = batch['scrollId']
 
-            self.logger.info(f"{total} places in query total.")
-            self.logger.info(f"Number of batches: {math.ceil(total / self._batch_size)}")
+            self.logger.info("{0} places in query total.".format(total))
+            self.logger.info("Number of batches: {0}".format(math.ceil(total / self._batch_size)))
             places = self._collect_places_data(batch['result'])
 
             for place in places:
@@ -285,15 +292,15 @@ class GazetteerHarvester:
             self.timeframe_query = ''
         else:
             self.timeframe_query = \
-                f"lastChangeDate:[{start_date.isoformat()}%20TO%20{datetime.date.today().isoformat()}]"
+                "lastChangeDate:[{0}%20TO%20{1}]".format(start_date.isoformat(), datetime.date.today().isoformat())
 
         if output_format == 'marc':
             suffix = '.mrc'
         elif output_format == 'marcxml':
             suffix = '.marcxml'
         else:
-            self.logger.error(f"Unknown format: {output_format}, aborting.")
+            self.logger.error("Unknown format: {0}, aborting.".format(output_format))
             return
 
-        self._output_path = f"{output_directory}gazetteer_authority{suffix}"
+        self._output_path = "{0}gazetteer_authority{1}".format(output_directory, suffix)
         self._format = output_format

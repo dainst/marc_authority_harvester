@@ -19,14 +19,14 @@ def validate_date(s: str):
     try:
         return datetime.date.fromisoformat(s)
     except ValueError:
-        msg = f"Not a valid date: '{s}', expected pattern: YYYY-MM-DD"
+        msg = "Not a valid date: '{0}', expected pattern: YYYY-MM-DD".format(s)
         raise argparse.ArgumentTypeError(msg)
 
 
 def is_positive_number(i: str):
     value = int(i)
     if value <= 0:
-        msg = f"Please provide a positive date offset."
+        msg = "Please provide a positive date offset."
         raise argparse.ArgumentTypeError(msg)
     else:
         return value
@@ -34,7 +34,7 @@ def is_positive_number(i: str):
 
 def is_writable_directory(path: str):
     if os.path.exists(path) and (not os.path.isdir(path) or not os.access(path, os.W_OK)):
-        msg = f"Please provide writable directory."
+        msg = "Please provide writable directory."
         raise argparse.ArgumentTypeError(msg)
     elif not os.path.exists(path):
         os.makedirs(path)
@@ -67,13 +67,13 @@ group.add_argument('-c', '--continue', action='store_true',
 group.add_argument('-d', '--date', type=validate_date, nargs='?',
                    help="Harvest everything since a given date, date ISO pattern: YYYY-MM-DD.")
 group.add_argument('-o', '--offset', type=is_positive_number, nargs='?',
-                   help=f"Use a day offset from the current date to specify the starting date.")
+                   help="Use a day offset from the current date to specify the starting date.")
 
 
 if __name__ == '__main__':
     options = vars(parser.parse_args())
     final_output_path = create_default_output_directory(options['target'])
-    date_log_path = f"{options['target']}/last_run_date.log"
+    date_log_path = "{0}/last_run_date.log".format(options['target'])
 
     if options['continue']:
         with open(date_log_path, 'r') as log:
@@ -86,7 +86,7 @@ if __name__ == '__main__':
         start_date = None
 
     if start_date is not None:
-        logger.info(f"Harvesting all data changes since {start_date.isoformat()}.")
+        logger.info("Harvesting all data changes since {0}.".format(start_date.isoformat()))
     else:
         logger.info("Running complete harvest.")
 

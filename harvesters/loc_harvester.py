@@ -28,21 +28,21 @@ class LocHarvester:
         result = []
 
         feed_page_index = 1
-        feed_items = self._read_feed(f"{feed}{feed_page_index}", start_date)
+        feed_items = self._read_feed("{0}{1}".format(feed, feed_page_index), start_date)
         feed_page_index += 1
 
         result.extend(feed_items)
 
         while feed_items:
-            feed_items = self._read_feed(f"{feed}{feed_page_index}", start_date)
+            feed_items = self._read_feed("{0}{1}".format(feed, feed_page_index), start_date)
             feed_page_index += 1
             result.extend(feed_items)
 
         # If an entry was edited twice or more within the harvested timespan, it will show up multiple times in the
         # result list.
-        self.logger.debug(f"Filtering duplicate results, current:  {len(result)}")
+        self.logger.debug("Filtering duplicate results, current:  {0}".format(len(result)))
         result = list(set(result))
-        self.logger.debug(f"                             filtered: {len(result)}")
+        self.logger.debug("                             filtered: {0}".format(len(result)))
 
         return result
 
@@ -65,10 +65,10 @@ class LocHarvester:
             self._handle_query_exception(e, 5)
 
     def _retry_query(self, url, retries_left):
-        self.logger.info(f"  Retrying {url}...")
+        self.logger.info("  Retrying {0}...".format(url))
         try:
             if retries_left == 0:
-                self.logger.info(f"  No retries left for #{url}.")
+                self.logger.info("  No retries left for {0}.".format(url))
                 return None
             else:
                 response = requests.get(url=url)
@@ -83,10 +83,10 @@ class LocHarvester:
         if retries_left > 5:
             return self._retry_query(e.request.url, retries_left)
         else:
-            self.logger.error('Maximum number of retries reached, aborting.')
-            self.logger.error(f'Unhandled error: ')
-            self.logger.error(f'Request: {e.request}')
-            self.logger.error(f'Response: {e.response}')
+            self.logger.error("Maximum number of retries reached, aborting.")
+            self.logger.error("Unhandled error: ")
+            self.logger.error("Request: {0}".format(e.request))
+            self.logger.error("Response: {0}".format(e.response))
 
     def _read_feed(self, url, min_date):
         res = requests.get(url, headers={"Accept": "application/xml"}, cookies={"Cookie": "?"})
@@ -94,16 +94,16 @@ class LocHarvester:
         xml_element_tree: etree.ElementTree = etree.parse(BytesIO(res.content))
 
         entries = xml_element_tree.xpath(
-            f"//default:entry", namespaces=self._NS
+            "//default:entry", namespaces=self._NS
         )
 
         result = []
         for entry in entries:
             link = entry.xpath(
-                f'./default:link[@rel="alternate" and @type="application/marc+xml"]/@href', namespaces=self._NS
+                './default:link[@rel="alternate" and @type="application/marc+xml"]/@href', namespaces=self._NS
             )[0]
             timestamp = entry.xpath(
-                f'./default:updated/text()', namespaces=self._NS
+                './default:updated/text()', namespaces=self._NS
             )[0]
 
             date = datetime.datetime.fromisoformat(timestamp).date()
@@ -144,10 +144,10 @@ class LocHarvester:
             self.logger.warning("Harvesting without start date is not supported, aborting.")
             return
 
-        with open(f"{self._output_directory}loc_personal_names{self._suffix}", 'wb') as personal_names_fh, \
-             open(f"{self._output_directory}loc_corporate_names{self._suffix}", 'wb') as corporate_names_fh, \
-             open(f"{self._output_directory}loc_meeting_names{self._suffix}", 'wb') as meeting_names_fh, \
-             open(f"{self._output_directory}loc_uniform_titles{self._suffix}", 'wb') as uniform_titles_fh:
+        with open("{0}loc_personal_names{1}".format(self._output_directory, self._suffix), 'wb') as personal_names_fh, \
+             open("{0}loc_corporate_names{1}".format(self._output_directory, self._suffix), 'wb') as corporate_names_fh, \
+             open("{0}loc_meeting_names{1}".format(self._output_directory, self._suffix), 'wb') as meeting_names_fh, \
+             open("{0}loc_uniform_titles{1}".format(self._output_directory, self._suffix), 'wb') as uniform_titles_fh:
 
             heading_to_file_handler = \
                 {
@@ -158,18 +158,18 @@ class LocHarvester:
                 }
 
             for feed in self._subscribed_feeds:
-                self.logger.info(f"Reading feed: {feed}.")
+                self.logger.info("Reading feed: {0}.".format(feed))
                 entry_links = self._collect_entries_since_start_date(feed, self._start_date)
 
                 batched_list = []
                 for i in range(0, len(entry_links), self._batch_size):
                     batched_list.append(entry_links[i:i + self._batch_size])
 
-                self.logger.info(f"Collecting entry data batches and writing results to file. "
-                                 f"({len(entry_links)} entries in {len(batched_list)} batches)")
+                self.logger.info("Collecting entry data batches and writing results to file. "
+                                 "({1} entries in {1} batches)".format(len(entry_links), len(batched_list)))
                 counter = 1
                 for batch in batched_list:
-                    self.logger.info(f"  Processing batch #{counter} of {len(batched_list)}.")
+                    self.logger.info("  Processing batch #{0} of {1}.".format(counter, len(batched_list)))
                     self._write_records(self._collect_entry_data(batch), heading_to_file_handler)
                     counter += 1
 
@@ -185,8 +185,8 @@ class LocHarvester:
         # earlier than actually requested. TODO: Maybe find generalized solution (without expecting UTC+1 timezone)
         if datetime.datetime.now().time().hour < 12:
             new_date = start_date - datetime.timedelta(days=1)
-            self.logger.warning(f"Script running before LoC applies changes to their update feed, "
-                                f"also harvesting changes from {new_date.isoformat()}.")
+            self.logger.warning("Script running before LoC applies changes to their update feed, "
+                                "also harvesting changes from {0}.".format(new_date.isoformat()))
             self._start_date = new_date
         else:
             self._start_date = start_date
