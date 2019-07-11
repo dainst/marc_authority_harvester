@@ -9,12 +9,12 @@ import math
 
 
 class GazetteerHarvester:
-    _base_url: str = 'https://gazetteer.dainst.org'
+    _base_url = 'https://gazetteer.dainst.org'
     _output_file = None
     _file_writer = None
     _cached_places = dict()
-    _batch_size: int = 250
-    _processed_batches_counter: int = 0
+    _batch_size = 250
+    _processed_batches_counter = 0
     _gazId_pattern = re.compile('.*/place/(\d+)$')
 
     def _extract_gaz_id_from_url(self, url):

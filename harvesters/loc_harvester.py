@@ -91,7 +91,7 @@ class LocHarvester:
     def _read_feed(self, url, min_date):
         res = requests.get(url, headers={"Accept": "application/xml"}, cookies={"Cookie": "?"})
 
-        xml_element_tree: etree.ElementTree = etree.parse(BytesIO(res.content))
+        xml_element_tree = etree.parse(BytesIO(res.content))
 
         entries = xml_element_tree.xpath(
             "//default:entry", namespaces=self._NS

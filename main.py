@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 import os
+import dateutil.parser
 
 import gevent.monkey as monkey
 monkey.patch_all(thread=False, select=False)
@@ -17,7 +18,7 @@ logging.basicConfig(format='%(asctime)s-%(levelname)s-%(name)s - %(message)s')
 
 def validate_date(s: str):
     try:
-        return datetime.date.fromisoformat(s)
+        return dateutil.parser.parse(s)
     except ValueError:
         msg = "Not a valid date: '{0}', expected pattern: YYYY-MM-DD".format(s)
         raise argparse.ArgumentTypeError(msg)
@@ -44,7 +45,7 @@ def is_writable_directory(path: str):
 
 
 def create_default_output_directory(output_path):
-    path = f'{output_path}/{datetime.date.today().isoformat()}/'
+    path = "{0}/{1}/".format(output_path, datetime.date.today().isoformat())
     if not os.path.exists(path):
         os.makedirs(path)
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
 
     if options['continue']:
         with open(date_log_path, 'r') as log:
-            start_date = datetime.date.fromisoformat(log.readline().rstrip('\n'))
+            start_date = dateutil.parser.parse(log.readline().rstrip('\n'))
     elif options['date']:
         start_date = options['date']
     elif options['offset']:
