@@ -2,3 +2,4 @@ pymarc
 lxml
 requests
 grequests
+python-dateutil
