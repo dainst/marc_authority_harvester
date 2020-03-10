@@ -71,18 +71,25 @@ group.add_argument('-o', '--offset', type=is_positive_number, nargs='?',
                    help="Use a day offset from the current date to specify the starting date.")
 
 
-if __name__ == '__main__':
-    options = vars(parser.parse_args())
+def run_harvests(options):
+
     final_output_path = create_default_output_directory(options['target'])
-    date_log_path = "{0}/last_run_date.log".format(options['target'])
 
     if options['continue']:
+        date_log_path = "{0}/last_run_date.log".format(options['target'])
+        if not os.path.exists(date_log_path):
+            logger.warning("Unable to continue harvest, because no file exists"
+                           "at {0}.".format(date_log_path))
+            return
         with open(date_log_path, 'r') as log:
             start_date = dateutil.parser.parse(log.readline().rstrip('\n'))
+
     elif options['date']:
         start_date = options['date']
+
     elif options['offset']:
         start_date = datetime.date.today() - datetime.timedelta(days=options['offset'])
+
     else:
         start_date = None
 
@@ -120,5 +127,11 @@ if __name__ == '__main__':
         )
         loc.start()
 
-    with open(date_log_path, 'w') as log:
+
+if __name__ == '__main__':
+    options = vars(parser.parse_args())
+
+    run_harvests(options)
+
+    with open("{0}/last_run_date.log".format(options['target']), 'w') as log:
         log.write(datetime.date.today().isoformat())
