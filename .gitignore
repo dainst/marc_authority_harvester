@@ -6,5 +6,6 @@ venv/
 # Output directory
 
 output/**/*.mrc
+output/**/*.mrk
 output/**/*.marcxml
 output/**/*.log
