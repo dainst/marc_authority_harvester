@@ -4,7 +4,6 @@ from pymarc import record_to_xml, marcxml
 import datetime
 import logging
 import dateutil.parser
-import pytz
 
 from lxml import etree
 from io import BytesIO, StringIO
@@ -101,9 +100,9 @@ class LocHarvester:
                 './default:updated/text()', namespaces=self._NS
             )[0]
 
-            date = dateutil.parser.parse(timestamp)
+            date = dateutil.parser.parse(timestamp, ignoretz=True).date()
 
-            if date < pytz.UTC.localize(min_date):
+            if date < min_date:
                 continue
 
             result.append((link, date))
