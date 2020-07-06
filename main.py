@@ -122,7 +122,7 @@ def run_harvests(options):
         thesaurus = ThesaurusHarvester(
             output_path=final_output_path,
             output_filename=output_file_name,
-            is_output_chunked='True'
+            is_output_chunked='False'
         )
         thesaurus.run(start_date.isoformat(), "0")
 
@@ -149,7 +149,7 @@ def run_harvests(options):
         thesaurus = ThesaurusHarvester(
             output_path=final_output_path,
             output_filename=output_file_name,
-            is_output_chunked='True'
+            is_output_chunked='False'
         )
         thesaurus.run(start_date.isoformat(), "0")
 
