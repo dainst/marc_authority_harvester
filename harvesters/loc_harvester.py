@@ -81,14 +81,7 @@ class LocHarvester:
             self._handle_query_exception(e, retries_left - 1)
 
     def _handle_query_exception(self, e, retries_left):
-
-        if retries_left > 5:
-            return self._retry_query(e.request.url, retries_left)
-        else:
-            self.logger.error("Maximum number of retries reached, aborting.")
-            self.logger.error("Unhandled error: ")
-            self.logger.error("Request: {0}".format(e.request))
-            self.logger.error("Response: {0}".format(e.response))
+        return self._retry_query(e.request.url, retries_left)
 
     def _read_feed(self, url, min_date):
         res = requests.get(url, headers={"Accept": "application/xml"}, cookies={"Cookie": "?"})
@@ -172,7 +165,11 @@ class LocHarvester:
                 counter = 1
                 for batch in batched_list:
                     self.logger.info("  Processing batch #{0} of {1}.".format(counter, len(batched_list)))
-                    self._write_records(self._collect_entry_data(batch), heading_to_file_handler)
+                    batch_records = self._collect_entry_data(batch)
+                    if batch_records is not None:
+                        self._write_records(batch_records, heading_to_file_handler)
+                    else:
+                        self.logger.info("  No records written for batch #{0}.".format(counter))
                     counter += 1
 
     def __init__(self, start_date, output_directory, output_format):
