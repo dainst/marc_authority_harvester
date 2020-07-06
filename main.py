@@ -9,6 +9,7 @@ monkey.patch_all(thread=False, select=False)
 
 from harvesters.gazetteer_harvester import GazetteerHarvester
 from harvesters.loc_harvester import LocHarvester
+from harvesters.thesaurus_harvester import ThesaurusHarvester
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -55,7 +56,7 @@ def create_default_output_directory(output_path):
 parser = argparse.ArgumentParser(description='Harvest MARC authority data from various data providers.')
 parser.add_argument('-f', '--format', type=str, nargs='?', default='marc', choices=['marc', 'marcxml'],
                     help="The desired output format.")
-parser.add_argument('-s', '--sources', type=str, nargs='?', default='all', choices=['all', 'gazetteer', 'loc'],
+parser.add_argument('-s', '--sources', type=str, nargs='?', default='all', choices=['all', 'gazetteer', 'loc', 'ths'],
                     help="The desired data providers.")
 parser.add_argument('-t', '--target', type=is_writable_directory, nargs='?', default='./output',
                     help="Specificy output directory.")
@@ -112,6 +113,19 @@ def run_harvests(options):
             output_format=options['format']
         )
         loc.start()
+    elif options['sources'] == 'ths':
+        if options['format'] == 'marc':
+            output_file_name = ThesaurusHarvester.DEFAULT_MARC_AUTHORITY_FILENAME
+        else:
+            output_file_name = 'thesaurus_authority.marcxml'
+
+        thesaurus = ThesaurusHarvester(
+            output_path=final_output_path,
+            output_filename=output_file_name,
+            is_output_chunked='True'
+        )
+        thesaurus.run(start_date.isoformat(), "0")
+
     else:
         gazetteer = GazetteerHarvester(
             start_date=start_date,
@@ -126,6 +140,18 @@ def run_harvests(options):
             output_format=options['format']
         )
         loc.start()
+
+        if options['format'] == 'marc':
+            output_file_name = ThesaurusHarvester.DEFAULT_MARC_AUTHORITY_FILENAME
+        else:
+            output_file_name = 'thesaurus_authority.marcxml'
+
+        thesaurus = ThesaurusHarvester(
+            output_path=final_output_path,
+            output_filename=output_file_name,
+            is_output_chunked='True'
+        )
+        thesaurus.run(start_date.isoformat(), "0")
 
 
 if __name__ == '__main__':
