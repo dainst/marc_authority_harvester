@@ -9,7 +9,7 @@ monkey.patch_all(thread=False, select=False)
 
 from harvesters.gazetteer_harvester import GazetteerHarvester
 from harvesters.loc_harvester import LocHarvester
-from harvesters.thesaurus_harvester import ThesaurusHarvester
+from harvesters.thesauri_harvester import ThesauriHarvester
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -114,17 +114,12 @@ def run_harvests(options):
         )
         loc.start()
     elif options['sources'] == 'ths':
-        if options['format'] == 'marc':
-            output_file_name = ThesaurusHarvester.DEFAULT_MARC_AUTHORITY_FILENAME
-        else:
-            output_file_name = 'thesaurus_authority.marcxml'
-
-        thesaurus = ThesaurusHarvester(
-            output_path=final_output_path,
-            output_filename=output_file_name,
-            is_output_chunked='False'
+        thesaurus = ThesauriHarvester(
+            start_date=start_date,
+            output_directory=final_output_path,
+            output_format=options['format']
         )
-        thesaurus.run(start_date.isoformat(), "0")
+        thesaurus.start()
 
     else:
         gazetteer = GazetteerHarvester(
@@ -141,17 +136,12 @@ def run_harvests(options):
         )
         loc.start()
 
-        if options['format'] == 'marc':
-            output_file_name = ThesaurusHarvester.DEFAULT_MARC_AUTHORITY_FILENAME
-        else:
-            output_file_name = 'thesaurus_authority.marcxml'
-
-        thesaurus = ThesaurusHarvester(
-            output_path=final_output_path,
-            output_filename=output_file_name,
-            is_output_chunked='False'
+        thesaurus = ThesauriHarvester(
+            start_date=start_date,
+            output_directory=final_output_path,
+            output_format=options['format']
         )
-        thesaurus.run(start_date.isoformat(), "0")
+        thesaurus.start()
 
 
 if __name__ == '__main__':
