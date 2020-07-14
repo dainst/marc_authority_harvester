@@ -8,6 +8,8 @@ import dateutil.parser
 from lxml import etree
 from io import BytesIO, StringIO
 
+from harvesters.helper import MARCXML_OPENING_ELEMENTS, MARCXML_CLOSING_ELEMENTS
+
 
 class LocHarvester:
 
@@ -151,6 +153,10 @@ class LocHarvester:
                     '130': uniform_titles_fh
                 }
 
+            if self._format == 'marcxml':
+                for key in heading_to_file_handler:
+                    heading_to_file_handler[key].write(MARCXML_OPENING_ELEMENTS)
+
             for feed in self._subscribed_feeds:
                 self.logger.info("Reading feed: {0}.".format(feed))
                 entry_links = self._collect_entries_since_start_date(feed, self._start_date)
@@ -170,6 +176,10 @@ class LocHarvester:
                     else:
                         self.logger.info("  No records written for batch #{0}.".format(counter))
                     counter += 1
+
+            if self._format == 'marcxml':
+                for key in heading_to_file_handler:
+                    heading_to_file_handler[key].write(MARCXML_CLOSING_ELEMENTS)
 
     def __init__(self, start_date, output_directory, output_format):
         self.logger = logging.getLogger(self.__class__.__name__)

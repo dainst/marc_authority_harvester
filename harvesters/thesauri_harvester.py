@@ -9,6 +9,8 @@ from pymarc import Record, Field, record_to_xml
 import dateutil.parser
 import datetime
 
+from harvesters.helper import MARCXML_OPENING_ELEMENTS, MARCXML_CLOSING_ELEMENTS
+
 
 class ThesauriHarvester:
 
@@ -326,10 +328,10 @@ class ThesauriHarvester:
             self._output_file = output_file
 
             if self._format == 'marcxml':
-                self._output_file.write(bytes('<?xml version="1.0" encoding="UTF-8" ?><collection xmlns="http://www.loc.gov/MARC21/slim" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd">','utf-8'))
+                self._output_file.write(MARCXML_OPENING_ELEMENTS)
             self._harvest_concept(self._root_concept)
             if self._format == 'marcxml':
-                self._output_file.write(bytes('</collection>', 'utf-8'))
+                self._output_file.write(MARCXML_CLOSING_ELEMENTS)
 
     def __init__(self, start_date, output_directory, output_format):
         self.logger = logging.getLogger(self.__class__.__name__)

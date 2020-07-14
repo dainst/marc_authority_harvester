@@ -7,6 +7,8 @@ import logging
 import re
 import math
 
+from harvesters.helper import MARCXML_OPENING_ELEMENTS, MARCXML_CLOSING_ELEMENTS
+
 
 class GazetteerHarvester:
     _base_url = 'https://gazetteer.dainst.org'
@@ -262,6 +264,8 @@ class GazetteerHarvester:
     def start(self):
         with open(self._output_path, 'wb') as output_file:
             self._output_file = output_file
+            if self._format == 'marcxml':
+                self._output_file.write(MARCXML_OPENING_ELEMENTS)
 
             batch = self._get_batch()
             total = batch['total']
@@ -282,6 +286,9 @@ class GazetteerHarvester:
                     self._write_place(place)
 
                 next_batch = self._get_batch(scroll_id)
+
+            if self._format == 'marcxml':
+                self._output_file.write(MARCXML_CLOSING_ELEMENTS)
 
     def __init__(self, start_date, output_directory, output_format):
 
