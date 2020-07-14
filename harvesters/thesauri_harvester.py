@@ -290,7 +290,7 @@ class ThesauriHarvester:
             definition_lang = element.xpath(
                 './@xml:lang',
                 namespaces=self._NS
-            )
+            )[0]
             field = Field(
                 tag=677,
                 indicators=(' ', ' '),
