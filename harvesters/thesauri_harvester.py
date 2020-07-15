@@ -184,7 +184,8 @@ class ThesauriHarvester:
                 indicators=(' ', ' '),
                 subfields=[
                     'a', str(label),
-                    'l', language
+                    'l', language,
+                    'i', 'pref label'
                 ]
             )
 
@@ -209,7 +210,8 @@ class ThesauriHarvester:
                 indicators=(' ', ' '),
                 subfields=[
                     'a', str(label),
-                    'l', language
+                    'l', language,
+                    'i', 'alt label'
                 ]
             )
 
