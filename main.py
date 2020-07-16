@@ -122,26 +122,35 @@ def run_harvests(options):
         thesaurus.start()
 
     else:
-        gazetteer = GazetteerHarvester(
-            start_date=start_date,
-            output_directory=final_output_path,
-            output_format=options['format']
-        )
-        gazetteer.start()
+        try:
+            gazetteer = GazetteerHarvester(
+                start_date=start_date,
+                output_directory=final_output_path,
+                output_format=options['format']
+            )
+            gazetteer.start()
+        except Exception as e:
+            logger.error(e)
 
-        loc = LocHarvester(
-            start_date=start_date,
-            output_directory=final_output_path,
-            output_format=options['format']
-        )
-        loc.start()
+        try:
+            thesaurus = ThesauriHarvester(
+                start_date=start_date,
+                output_directory=final_output_path,
+                output_format=options['format']
+            )
+            thesaurus.start()
+        except Exception as e:
+            logger.error(e)
 
-        thesaurus = ThesauriHarvester(
-            start_date=start_date,
-            output_directory=final_output_path,
-            output_format=options['format']
-        )
-        thesaurus.start()
+        try:
+            loc = LocHarvester(
+                start_date=start_date,
+                output_directory=final_output_path,
+                output_format=options['format']
+            )
+            loc.start()
+        except Exception as e:
+            logger.error(e)
 
 
 if __name__ == '__main__':
