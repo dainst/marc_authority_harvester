@@ -5,6 +5,7 @@ import datetime
 import logging
 import dateutil.parser
 
+
 from lxml import etree
 from io import BytesIO, StringIO
 
@@ -102,7 +103,7 @@ class LocHarvester:
                 './default:updated/text()', namespaces=self._NS
             )[0]
 
-            date = dateutil.parser.parse(timestamp, ignoretz=True).date()
+            date = datetime.datetime.combine(dateutil.parser.parse(timestamp, ignoretz=True), datetime.datetime.min.time())
 
             if date < min_date:
                 continue

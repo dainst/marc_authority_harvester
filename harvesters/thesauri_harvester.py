@@ -14,7 +14,7 @@ from harvesters.helper import MARCXML_OPENING_ELEMENTS, MARCXML_CLOSING_ELEMENTS
 
 class ThesauriHarvester:
 
-    _IDAI_WORLD_THESAURI_SERVICE_ENDPOINT: str = 'http://thesauri.dainst.org/'
+    _IDAI_WORLD_THESAURI_SERVICE_ENDPOINT = 'http://thesauri.dainst.org/'
 
     _NS = {
         'default': _IDAI_WORLD_THESAURI_SERVICE_ENDPOINT,
@@ -43,7 +43,7 @@ class ThesauriHarvester:
             response = requests.get(url='{0}.rdf'.format(uri))
             response.raise_for_status()
 
-            root: ElementTree = etree.parse(BytesIO(response.content))
+            root = etree.parse(BytesIO(response.content))
 
             pref_label = root.xpath(
                 './rdf:Description[@rdf:about="{0}"]/skos:prefLabel/text()',
@@ -65,7 +65,10 @@ class ThesauriHarvester:
                 is_within_timeframe = True
             else:
                 for timestamp in change_dates:
-                    date = dateutil.parser.parse(timestamp, ignoretz=True).date()
+                    date = datetime.datetime.combine(
+                        dateutil.parser.parse(timestamp, ignoretz=True),
+                        datetime.datetime.min.time()
+                    )
 
                     if date < self._oldest_date:
                         continue
@@ -326,6 +329,7 @@ class ThesauriHarvester:
         return record
 
     def start(self):
+        self.logger.info("Harvesting iDAI.thesauri, starting with root {0}.".format(self._root_concept))
         with open(self._output_path, 'wb') as output_file:
             self._output_file = output_file
 
@@ -337,7 +341,7 @@ class ThesauriHarvester:
 
     def __init__(self, start_date, output_directory, output_format):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.INFO)
 
         if start_date is not None:
             self._oldest_date = start_date
