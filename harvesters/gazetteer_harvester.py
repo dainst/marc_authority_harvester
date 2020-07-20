@@ -19,6 +19,14 @@ class GazetteerHarvester:
     _processed_batches_counter = 0
     _gazId_pattern = re.compile('.*/place/(\d+)$')
 
+    def _scrub_coordinates_and_polygons(self, place):
+        if 'prefLocation' in place:
+            del place['prefLocation']
+        if 'locations' in place:
+            del place['locations']
+
+        return place
+
     def _extract_gaz_id_from_url(self, url):
         match = self._gazId_pattern.match(url)
         return match.group(1)
@@ -119,6 +127,7 @@ class GazetteerHarvester:
 
         order = 1
         fields_551 = []
+        added_parents = []
         if 'parent' in place:
             parent_uri = place['parent']
             while parent_uri is not None:
@@ -134,12 +143,11 @@ class GazetteerHarvester:
 
                     response = requests.get(url)
                     parent = response.json()
-
-                    self._cached_places[parent_uri] = parent
+                    self._cached_places[parent_uri] = self._scrub_coordinates_and_polygons(parent)
 
                 current = self._cached_places[parent_uri]
 
-                if 'prefName' in current and 'accessDenied':
+                if 'prefName' in current:
                     fields_551.append(Field(
                         tag=551, indicators=(' ', ' '), subfields=create_x51_heading_subfield(current['prefName']) + [
                             'x', "part of", 'i', "{0}".format(order), '0', "iDAI.gazetteer-{0}".format(current['gazId'])
@@ -151,8 +159,15 @@ class GazetteerHarvester:
                     self.logger.warning("No prefName for: {0}/doc/{1}.json".format(self._base_url, current['gazId']))
 
                 order += 1
+                added_parents += [parent_uri]
+
                 if 'parent' in current:
-                    parent_uri = current['parent']
+                    if current['parent'] in added_parents:
+                        self.logger.error("Tried adding {0} as a parent a second time. This should not happen.".format(parent_uri))
+                        self.logger.error("Gazetteer ID: {0}".format(place['gazId']))
+                        parent_uri = None
+                    else:
+                        parent_uri = current['parent']
                 else:
                     parent_uri = None
 
@@ -208,14 +223,13 @@ class GazetteerHarvester:
                 response.raise_for_status()
                 place = response.json()
 
-                self._cached_places[place['@id']] = place
+                self._cached_places[place['@id']] = self._scrub_coordinates_and_polygons(place)
 
                 places.append(place)
         except Exception as e:
             self._handle_query_exception(e, 5)
 
-        # Also load parent and ancestor places of the current batch (in case they are not already cached)
-        url_list = []
+        # Also load parent and ancestor places of the current batch (in case they are not already cached)        url_list = []
         for place in places:
             if 'parent' in place and place['parent'] not in self._cached_places:
                 url_list.append(
@@ -239,7 +253,7 @@ class GazetteerHarvester:
 
                 places.append(place)
 
-                self._cached_places[place['@id']] = place
+                self._cached_places[place['@id']] = self._scrub_coordinates_and_polygons(place)
         except Exception as e:
             self._handle_query_exception(e, 5)
 
