@@ -229,7 +229,8 @@ class GazetteerHarvester:
         except Exception as e:
             self._handle_query_exception(e, 5)
 
-        # Also load parent and ancestor places of the current batch (in case they are not already cached)        url_list = []
+        # Also load parent and ancestor places of the current batch (in case they are not already cached)
+        url_list = []
         for place in places:
             if 'parent' in place and place['parent'] not in self._cached_places:
                 url_list.append(
