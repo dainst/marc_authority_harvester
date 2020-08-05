@@ -15,7 +15,7 @@ class GazetteerHarvester:
     _output_file = None
     _file_writer = None
     _cached_places = dict()
-    _batch_size = 250
+    _batch_size = 50
     _processed_batches_counter = 0
     _gazId_pattern = re.compile('.*/place/(\d+)$')
 
