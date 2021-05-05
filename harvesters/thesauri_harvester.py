@@ -250,36 +250,6 @@ class ThesauriHarvester:
         )
         fields_550.append(broader_field)
 
-        narrower_uris = main_description_element.xpath(
-            './skos:narrower/@rdf:resource',
-            namespaces=self._NS
-        )
-
-        for narrower_uri in narrower_uris:
-            narrower_label = root.xpath(
-                './rdf:Description[@rdf:about="{0}"]/skos:prefLabel/text()'.format(narrower_uri),
-                namespaces=self._NS
-            )[0]
-
-            narrower_language = root.xpath(
-                './rdf:Description[@rdf:about="{0}"]/skos:prefLabel/@xml:lang'.format(broader_uri),
-                namespaces=self._NS
-            )[0]
-
-            narrower_field = Field(
-                tag=550,
-                indicators=(' ', ' '),
-                subfields=[
-                    'a', str(narrower_label),
-                    'l', str(narrower_language),
-                    '0', source + narrower_uri.rsplit('/', 1)[1],
-                    '1', narrower_uri,
-                    'i', 'narrower concept'
-                ]
-            )
-
-            fields_550.append(narrower_field)
-
         definition_elements = main_description_element.xpath(
             './skos:definition',
             namespaces=self._NS
