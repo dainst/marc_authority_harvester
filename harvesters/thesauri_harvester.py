@@ -59,6 +59,13 @@ class ThesauriHarvester:
                 namespaces=self._NS
             )
 
+            # If there have been no changes, check if creation date falls within timeframe instead.
+            if change_dates == []:
+                change_dates = root.xpath(
+                    './rdf:Description/skos:changeNote/rdf:Description/dct:created/text()',
+                    namespaces=self._NS
+                )
+
             is_within_timeframe = False
 
             if self._oldest_date is None:
