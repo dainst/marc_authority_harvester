@@ -36,7 +36,6 @@ class ThesauriHarvester:
     _oldest_date = None
     _output_file = None
     _file_writer = None
-    _cached_pref_labels = dict()
 
     def _harvest_concept(self, uri):
         try:
@@ -44,11 +43,6 @@ class ThesauriHarvester:
             response.raise_for_status()
 
             root = etree.parse(BytesIO(response.content))
-
-            pref_label = root.xpath(
-                './rdf:Description[@rdf:about="{0}"]/skos:prefLabel/text()',
-                namespaces=self._NS
-            )
 
             is_absolute_root = root.find(
                 './/skos:topConceptOf',
@@ -85,7 +79,6 @@ class ThesauriHarvester:
             if is_absolute_root is not None:
                 self.logger.info('Skipping root concept {0}.'.format(uri))
             else:
-                self._cached_pref_labels[uri] = pref_label
                 if not is_within_timeframe:
                     self.logger.debug('No changes to {0} within timeframe.'. format(uri))
                 else:
