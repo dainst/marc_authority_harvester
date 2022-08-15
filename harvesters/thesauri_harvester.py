@@ -37,7 +37,7 @@ class ThesauriHarvester:
     _output_file = None
     _file_writer = None
 
-    def _harvest_concept(self, uri):
+    def _harvest_concept(self, uri, retries = 2):
         try:
             response = requests.get(url='{0}.rdf'.format(uri))
             response.raise_for_status()
@@ -94,8 +94,12 @@ class ThesauriHarvester:
 
             for uri in narrower_concept_uris:
                 self._harvest_concept(uri)
-        except requests.exceptions.HTTPError as e:
-            self.logger.error(e)
+        except Exception as e:
+            if retries > 0:
+                self.logger.warning('Retrying harvest of {0}.'.format(uri))
+                self._harvest_concept(uri, retries=retries-1)
+            else:
+                self.logger.error(e)
 
     def _create_marc_record(self, root, uri):
         source = 'iDAI.thesauri'
