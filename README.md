@@ -11,7 +11,7 @@ for `lxml`, see the [official Documentation](https://lxml.de/).
 
 Run `python3 main.py -h` for instructions. 
 * There are two supported output formats (MARC and MARCXML).
-* There are two sources for authority data supported, namely the [iDAI.gazetteer](https://gazetteer.dainst.org) and the 
+* There are three sources for authority data supported, namely the [iDAI.gazetteer](https://gazetteer.dainst.org), the 
 [Library of Congress](http://id.loc.gov/index.html) and the [iDAI.thersauri](https://thesauri.dainst.org).
 * There are three ways to specify the date marking the oldest updates you are interested in:
   1. Specify a date in ISO format (YYYY-MM-DD).
