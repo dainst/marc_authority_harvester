@@ -1,4 +1,4 @@
-pymarc
+pymarc==5.2.2
 lxml
 requests
 grequests

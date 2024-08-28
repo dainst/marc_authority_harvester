@@ -1,7 +1,7 @@
 import requests
 
 import grequests  # used for asynchronous/parallel queries
-from pymarc import Record, Field, record_to_xml
+from pymarc import Record, Field, record_to_xml, Subfield
 import datetime
 import logging
 import re
@@ -61,9 +61,9 @@ class GazetteerHarvester:
     def _create_marc_record(self, place):
         def create_x51_heading_subfield(data):
             if 'language' not in data or data['language'] == '':
-                return ['a', data['title']]
+                return [Subfield(code='a', value=data['title'])]
             else:
-                return ['a', data['title'], 'l', data['language']]
+                return [Subfield(code='a', value=data['title']), Subfield(code='l', value=data['language'])]
 
         field_001 = Field(tag='001', data="iDAI.gazetteer-{0}".format(place['gazId']))
         field_003 = Field(tag='003', data="DE-2553")
@@ -95,22 +95,30 @@ class GazetteerHarvester:
 
         field_024 = Field(
             tag=24, indicators=(7, ' '), subfields=[
-                'a', place['gazId'],
-                '2', "iDAI.gazetteer",
-                '9', "iDAI.gazetteer-{0}".format(place['gazId'])
+                Subfield(
+                    code='a', value=place['gazId'],
+                ),
+                Subfield(
+                    code='2', value="iDAI.gazetteer"
+                ),
+                Subfield(
+                    code='9', value="iDAI.gazetteer-{0}".format(place['gazId'])
+                )
             ]
         )
 
         field_040 = Field(
             tag=40, indicators=(' ', ' '), subfields=[
-                'a', 'Deutsches Archäologisches Institut'
+                Subfield(
+                    code='a', value='Deutsches Archäologisches Institut'
+                )
             ]
         )
 
         if 'prefName' in place:
             field_151 = Field(
                 tag=151, indicators=(' ', ' '), subfields=create_x51_heading_subfield(place['prefName']) + [
-                    '1', "{0}/doc/{1}".format(self._base_url, place['gazId'])
+                    Subfield(code='1', value="{0}/doc/{1}".format(self._base_url, place['gazId']))
                 ]
             )
         else:
@@ -150,7 +158,9 @@ class GazetteerHarvester:
                 if 'prefName' in current:
                     fields_551.append(Field(
                         tag=551, indicators=(' ', ' '), subfields=create_x51_heading_subfield(current['prefName']) + [
-                            'x', "part of", 'i', "{0}".format(order), '0', "iDAI.gazetteer-{0}".format(current['gazId'])
+                            Subfield(code='x', value="part of"), 
+                            Subfield(code='i', value="{0}".format(order)), 
+                            Subfield(code='0', value="iDAI.gazetteer-{0}".format(current['gazId']))
                         ]
                     ))
                 elif 'accessDenied' in current and current['accessDenied'] is True:
