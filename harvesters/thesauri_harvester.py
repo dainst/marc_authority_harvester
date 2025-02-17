@@ -4,7 +4,7 @@ import requests
 from lxml import etree
 from io import BytesIO
 from lxml.etree import ElementTree, Element
-from pymarc import Record, Field, record_to_xml
+from pymarc import Record, Field, record_to_xml, Subfield
 
 import dateutil.parser
 import datetime
@@ -137,16 +137,16 @@ class ThesauriHarvester:
             tag=24,
             indicators=(7, ' '),
             subfields=[
-                'a', thesaurus_id,
-                '2', source,
-                '9', source + thesaurus_id
+                Subfield(code='a', value=thesaurus_id),
+                Subfield(code='2', value=source),
+                Subfield(code='9', value=source + thesaurus_id)
             ]
         )
 
         field_040 = Field(
             tag=40,
             indicators=(' ', ' '),
-            subfields=['a', 'Deutsches Archäologisches Institut']
+            subfields=[Subfield(code='a', value='Deutsches Archäologisches Institut')]
         )
 
         main_description_element = root.xpath(
@@ -166,8 +166,8 @@ class ThesauriHarvester:
             tag=150,
             indicators=(' ', ' '),
             subfields=[
-                'a', str(pref_label_value[0]),
-                'l', 'de'
+                Subfield(code='a', value=str(pref_label_value[0])),
+                Subfield(code='l', value='de')
             ]
         )
 
@@ -190,9 +190,9 @@ class ThesauriHarvester:
                 tag=450,
                 indicators=(' ', ' '),
                 subfields=[
-                    'a', str(label),
-                    'l', language,
-                    'i', 'pref label'
+                    Subfield(code='a', value=str(label)),
+                    Subfield(code='l', value=language),
+                    Subfield(code='i', value='pref label')
                 ]
             )
 
@@ -216,9 +216,9 @@ class ThesauriHarvester:
                 tag=450,
                 indicators=(' ', ' '),
                 subfields=[
-                    'a', str(label),
-                    'l', language,
-                    'i', 'alt label'
+                    Subfield(code='a', value=str(label)),
+                    Subfield(code='l', value=language),
+                    Subfield(code='i', value='alt label')
                 ]
             )
 
@@ -245,11 +245,11 @@ class ThesauriHarvester:
             tag=550,
             indicators=(' ', ' '),
             subfields=[
-                'a', str(broader_label),
-                'l', str(broader_language),
-                '0', source + broader_uri.rsplit('/', 1)[1],
-                '1', broader_uri,
-                'i', 'broader concept'
+                Subfield(code='a', value=str(broader_label)),
+                Subfield(code='l', value=str(broader_language)),
+                Subfield(code='0', value=source + broader_uri.rsplit('/', 1)[1]),
+                Subfield(code='1', value=broader_uri),
+                Subfield(code='i', value='broader concept')
             ]
         )
         fields_550.append(broader_field)
@@ -274,9 +274,9 @@ class ThesauriHarvester:
                 tag=677,
                 indicators=(' ', ' '),
                 subfields=[
-                    'a', str(definition_text),
-                    'l', str(definition_lang),
-                    'v', source
+                    Subfield(code='a', value=str(definition_text)),
+                    Subfield(code='l', value=str(definition_lang)),
+                    Subfield(code='v', value=source)
                 ]
             )
 
